@@ -1,0 +1,47 @@
+---
+title: "Player Transfers"
+author: "Rishabh Kumar"
+date: "2022"
+output:
+  html_document:
+    theme:
+      bootswatch: cyborg
+  pdf_document: default
+---
+
+**This is a description of the data: **
+The dataset deals with soccer players. Today we will deal with visualizations that can better explain our dataset and give us insight into what is happening with our output variable in relation to some of the input variables
+
+```{r, echo = TRUE}
+# This chunk of the document is for loading the dataset. 
+# I will be using the read_table function to read data into a dataframe
+# as.data.frame converts the table into a dataframe
+fifadata=as.data.frame(read.table("./baseNormalizada.txt",sep="\t", header=TRUE))
+```
+
+```{r, include = FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+```{r, echo = TRUE}
+# This graph shows the effect of country on the price of a player by taking a groupby and getting the mean of price
+# The second graph shows the number of players from each country to show how many popular players each country produces
+# This data has been reduced to only popular countries
+
+fifadatasubset=subset(fifadata,fifadata$Birth.Place %in% c('Brazil','England','France','Argentina','Belgium','Spain','Portugal'))
+fifameans=aggregate(fifadatasubset$Price, list(fifadatasubset$Birth.Place), FUN=mean)
+fifacounts=fifadatasubset%>%count(Birth.Place,sort=TRUE)
+ggplot(fifameans, aes(x=x, y=Group.1),sprintf("%0.2f", round(x, digits = 2))) +
+geom_bar(position=position_dodge(), stat="identity")+ 
+geom_text(aes(label=x), vjust=-0.3, size=3.5,hjust = 1.1)+xlab("Price $")+ ylab("Country")
+
+ggplot(fifacounts, aes(x=Birth.Place, y=n)) +geom_bar(position=position_dodge(), stat="identity")+xlab("Country")+ ylab("# of Players")
+```
+
+```{r, echo = TRUE}
+# To judge the efficacy of our data, we will try to see ther distribution of data across different FIFA versions. Ideally we should have data from the latest fifa versions since the prices get inflated every year and a true representation can be see only from the latest data.
+fifagame=fifadata%>%count(Game.Edition,sort=TRUE)
+
+ggplot(fifagame, aes(x=Game.Edition, y=n)) +geom_bar(position=position_dodge(), stat="identity")+xlab("Game Edition")+ ylab("# of Data points")
+```
